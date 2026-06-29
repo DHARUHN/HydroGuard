@@ -11,14 +11,11 @@ function App() {
 
   return (
 
-    <BrowserRouter>
+    <BrowserRouter basename="/HydroGuard">
 
       <Routes>
 
-        <Route
-          path="/"
-          element={<Home />}
-        />
+        <Route path="/" element={<Home />} />
 
         <Route
           path="/admin-login"
