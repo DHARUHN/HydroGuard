@@ -1,761 +1,1235 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-function Dashboard() {
+import logo from "../assets/logo_Icon.jpg";
 
-  const navigate = useNavigate();
+function Dashboard(){
 
-  const role =
-    localStorage.getItem(
-      "role"
-    );
+const navigate = useNavigate();
 
-  const API_URL =
-  "https://3z41hmylgj.execute-api.ap-southeast-2.amazonaws.com/prod/dashboard";
+const role =
+localStorage.getItem("role");
 
-  const [data,
-    setData] =
-    useState(null);
+const API_URL =
+"https://3z41hmylgj.execute-api.ap-southeast-2.amazonaws.com/prod/dashboard";
 
-  const [row,
-    setRow] =
-    useState(0);
+const [data,setData]=useState(null);
 
-  useEffect(() => {
+const [row,setRow]=useState(0);
 
-    const fetchData =
-      async () => {
+useEffect(()=>{
 
-        try {
+const fetchData=async()=>{
 
-          const res =
+try{
 
-            await fetch(
+const res=
+await fetch(
 
-              `${API_URL}?row=${row}`
+`${API_URL}?row=${row}`
 
-            );
+);
 
-          const result =
+const result=
+await res.json();
 
-            await res.json();
+setData(result);
 
-          setData(
-            result
-          );
+}
 
-        }
+catch(err){
 
-        catch (err) {
+console.log(err);
 
-          console.log(
+}
 
-            err
+};
 
-          );
+fetchData();
 
-        }
+const interval=
 
-      };
+setInterval(()=>{
 
-    fetchData();
+setRow(
 
-    const interval =
+prev=>prev+1
 
-      setInterval(() => {
+);
 
-        setRow(
+},10000);
 
-          prev =>
+return()=>clearInterval(interval);
 
-            prev + 1
+},[row]);
 
-        );
+const logout=()=>{
 
-      }, 10000);
+localStorage.removeItem("role");
 
-    return () =>
+navigate("/");
 
-      clearInterval(
+};
 
-        interval
+if(!data){
 
-      );
+return(
 
-  }, [row]);
+<div className="loader">
 
-  const logout = () => {
+Loading HydroGuard...
 
-    localStorage.removeItem(
+</div>
 
-      "role"
+);
 
-    );
+}
 
-    navigate("/");
+const getColour=(value)=>{
 
-  };
+if(value<20) return "#7be495";
 
-  if (!data) {
+if(value<50) return "#ffd166";
 
-    return (
+if(value<100) return "#ff9f1c";
 
-      <h2>
+return "#ef476f";
 
-        Loading Data...
+};
 
-      </h2>
+return(
 
-    );
+<div className="dashboard-container">
 
-  }
+<div className="topbar">
 
-  return (
+<div className="logo-box">
 
-    <div className="dashboard-container">
+<img
 
-      <div className="topbar">
-        <center>
-        <div>
+src={logo}
 
-          <h1>
+alt="HydroGuard"
 
-            HydroGuard
+/>
 
-          </h1>
+<div>
 
-          <p>
+<h1>
 
-            DETECT -  ALERT -  PROTECT
+HydroGuard
 
-          </p>
+</h1>
+
+<p>
+
+DETECT • ALERT • PROTECT
+
+</p>
+
+</div>
+
+</div>
+
+<div>
+
+{
+
+role==="admin"
+
+&&
+
+<button
+
+className="grant-btn"
+
+onClick={()=>navigate(
+
+"/grant-access"
+
+)}
+
+>
+
+Grant Access
+
+</button>
+
+}
+
+<button
+
+className="logout-btn"
+
+onClick={logout}
+
+>
+
+Logout
+
+</button>
+
+</div>
+
+</div>
+
+
+{
+
+data.alarm==="ON"
+
+?
+
+<div className="alarm-banner">
+
+⚠ Water Quality Alert
+
+</div>
+
+:
+
+<div className="safe-banner">
+
+✔ System Normal
+
+</div>
+
+}
+
+<div className="sensor-grid">
+
+<div className="sensor-card">
+
+<div className="icon">
+
+🧪
+
+</div>
+
+<h3>pH</h3>
+
+<p>
+
+{data.pH}
+
+</p>
+
+</div>
+
+
+<div className="sensor-card">
+
+<div className="icon">
+
+🌡
+
+</div>
+
+<h3>
+
+Temperature
+
+</h3>
+
+<p>
+
+{data.temperature}°C
+
+</p>
+
+</div>
+
+
+<div className="sensor-card">
+
+<div className="icon">
+
+🎨
+
+</div>
+
+<h3>
+
+Colour
+
+</h3>
+
+<div
+
+className="colour-dot"
+
+style={{
+
+background:
+
+getColour(
+
+data.colour
+
+)
+
+}}
+
+>
+
+</div>
+
+<p>
+
+{data.colour}
+
+Pt-Co
+
+</p>
+
+</div>
+
+
+<div className="sensor-card">
+
+<div className="icon">
+
+💧
+
+</div>
+
+<h3>
+
+Turbidity
+
+</h3>
+
+<p>
+
+{data.turbidity}
+
+</p>
+
+</div>
+
+</div>
+
+
+<div className="status-grid">
+
+<div className="status-card">
+  <div className="icon">
+📊
+</div>
+
+<h2>
+
+COD
+
+</h2>
+
+<p>
+
+{data.cod}
+
+mg/L
+
+</p>
+
+</div>
+
+
+<div className="status-card">
+  <div className="icon">
+  📊
+</div>
+
+<h2>
+
+<b>Sensor Health</b>
+
+</h2>
+
+<p>
+
+{data.sensor_health}
+
+</p>
+
+</div>
+
+
+<div className="status-card">
+  <div className="icon">
+
+🚨
+</div>
+
+<h2>
+
+Alarm
+
+</h2>
+
+<p>
+
+{data.alarm}
+
+</p>
+
+</div>
+
+</div>
+
+
+<div className="recommendation-card">
+
+<h2>
+
+Recommendation
+
+</h2>
+
+<p>
+
+{
+
+data.alarm==="ON"
+
+?
+
+"Inspect Water Treatment Unit"
+
+:
+
+"Water Quality Stable"
+
+}
+
+</p>
+
+</div>
+
+
+<div className="footer-box">
+
+<p>
+
+Dataset Row :
+
+{row}
+
+</p>
+
+<p>
+
+Refresh :
+
+10 sec
+
+</p>
+
+</div>
+
+</div>
+
+);
+
+}
+
+export default Dashboard;
+
+// import { useEffect, useState } from "react";
+// import { useNavigate } from "react-router-dom";
+
+// function Dashboard() {
+
+//   const navigate = useNavigate();
+
+//   const role =
+//     localStorage.getItem(
+//       "role"
+//     );
+
+//   const API_URL =
+//   "https://3z41hmylgj.execute-api.ap-southeast-2.amazonaws.com/prod/dashboard";
+
+//   const [data,
+//     setData] =
+//     useState(null);
+
+//   const [row,
+//     setRow] =
+//     useState(0);
+
+//   useEffect(() => {
+
+//     const fetchData =
+//       async () => {
+
+//         try {
+
+//           const res =
+
+//             await fetch(
+
+//               `${API_URL}?row=${row}`
+
+//             );
+
+//           const result =
+
+//             await res.json();
+
+//           setData(
+//             result
+//           );
+
+//         }
+
+//         catch (err) {
+
+//           console.log(
+
+//             err
+
+//           );
+
+//         }
+
+//       };
+
+//     fetchData();
+
+//     const interval =
+
+//       setInterval(() => {
+
+//         setRow(
+
+//           prev =>
+
+//             prev + 1
+
+//         );
+
+//       }, 10000);
+
+//     return () =>
+
+//       clearInterval(
+
+//         interval
+
+//       );
+
+//   }, [row]);
+
+//   const logout = () => {
+
+//     localStorage.removeItem(
+
+//       "role"
+
+//     );
+
+//     navigate("/");
+
+//   };
+
+//   if (!data) {
+
+//     return (
+
+//       <h2>
+
+//         Loading Data...
+
+//       </h2>
+
+//     );
+
+//   }
+
+//   return (
+
+//     <div className="dashboard-container">
+
+//       <div className="topbar">
+//         <center>
+//         <div>
+
+//           <h1>
+
+//             HydroGuard
+
+//           </h1>
+
+//           <p>
+
+//             DETECT -  ALERT -  PROTECT
+
+//           </p>
           
-        </div>
-        </center>
-        <div>
+//         </div>
+//         </center>
+//         <div>
 
-          {
+//           {
 
-            role === "admin"
+//             role === "admin"
 
-            &&
+//             &&
 
-            <button
+//             <button
 
-              className="grant-btn"
+//               className="grant-btn"
 
-              onClick={() =>
+//               onClick={() =>
 
-                navigate(
+//                 navigate(
 
-                  "/grant-access"
+//                   "/grant-access"
 
-                )
+//                 )
 
-              }
+//               }
 
-            >
+//             >
 
-              Grant Access
+//               Grant Access
 
-            </button>
+//             </button>
 
-          }
+//           }
 
-          <button
+//           <button
 
-            className="logout-btn"
+//             className="logout-btn"
 
-            onClick={logout}
+//             onClick={logout}
 
-          >
+//           >
 
-            Logout
+//             Logout
 
-          </button>
+//           </button>
 
-        </div>
+//         </div>
 
-      </div>
+//       </div>
 
-      {
+//       {
 
-        data.alarm === "ON"
+//         data.alarm === "ON"
 
-        ?
+//         ?
 
-        <div
+//         <div
 
-          className="alarm-banner"
+//           className="alarm-banner"
 
-        >
+//         >
 
-          ⚠ Water Quality Alert
+//           ⚠ Water Quality Alert
 
-        </div>
+//         </div>
 
-        :
+//         :
 
-        <div
+//         <div
 
-          className="safe-banner"
+//           className="safe-banner"
 
-        >
+//         >
 
-          ✓ System Normal
+//           ✓ System Normal
 
-        </div>
+//         </div>
 
-      }
+//       }
 
-      <div className="sensor-grid">
+//       <div className="sensor-grid">
 
-        <div className="sensor-card">
+//         <div className="sensor-card">
 
-          <h3>
+//           <h3>
 
-            pH
+//             pH
 
-          </h3>
+//           </h3>
 
-          <p>
+//           <p>
 
-            {data.pH}
+//             {data.pH}
 
-          </p>
+//           </p>
 
-        </div>
+//         </div>
 
-        <div className="sensor-card">
+//         <div className="sensor-card">
 
-          <h3>
+//           <h3>
 
-            Temperature
+//             Temperature
 
-          </h3>
+//           </h3>
 
-          <p>
+//           <p>
 
-            {data.temperature}
+//             {data.temperature}
 
-            °C
+//             °C
 
-          </p>
+//           </p>
 
-        </div>
+//         </div>
 
-        <div className="sensor-card">
+//               <div className="sensor-card">
 
-          <h3>
+//         <h3>
 
-            Colour
+//           Colour
 
-          </h3>
+//         </h3>
 
-          <p>
+//         <div
 
-            {data.colour}
+//           className="water-colour"
 
-          </p>
+//           style={{
 
-        </div>
+//             background:
 
-        <div className="sensor-card">
+//             data.colour < 50
 
-          <h3>
+//             ? "#79d9ff"
 
-            Turbidity
+//             :
 
-          </h3>
+//             data.colour < 100
 
-          <p>
+//             ? "#ffd54f"
 
-            {data.turbidity}
+//             :
 
-          </p>
+//             data.colour < 150
 
-        </div>
+//             ? "#ff9800"
 
-      </div>
+//             :
 
-      <div className="status-grid">
+//             "#7b3f00"
 
-        <div className="status-card">
+//           }}
 
-          <h2>
+//         >
 
-            COD
+//         </div>
 
-          </h2>
+//         <p>
 
-          <p>
+//           {data.colour} <nbsp></nbsp>
 
-            {data.cod}
+//           Pt-Co
 
-            mg/L
+//         </p>
 
-          </p>
+//       </div>
 
-        </div>
+//         <div className="sensor-card">
 
-        <div className="status-card">
+//           <h3>
 
-          <h2>
+//             Turbidity
 
-            Sensor Health
+//           </h3>
 
-          </h2>
+//           <p>
 
-          <p>
+//             {data.turbidity}
 
-            {data.sensor_health}
+//           </p>
 
-          </p>
+//         </div>
 
-        </div>
+//       </div>
 
-        <div className="status-card">
+//       <div className="status-grid">
 
-          <h2>
+//         <div className="status-card">
 
-            Alarm
+//           <h2>
 
-          </h2>
+//             COD
 
-          <p>
+//           </h2>
 
-            {data.alarm}
+//           <p>
 
-          </p>
+//             {data.cod}
 
-        </div>
+//             mg/L
 
-      </div>
+//           </p>
 
-      <div className="recommendation-card">
+//         </div>
 
-        <h2>
+//         <div className="status-card">
 
-          Recommendation
+//           <h2>
 
-        </h2>
+//             Sensor Health
 
-        <p>
+//           </h2>
 
-          {
+//           <p>
 
-            data.alarm === "ON"
+//             {data.sensor_health}
 
-            ?
+//           </p>
 
-            "Inspect Water Treatment Unit"
+//         </div>
 
-            :
+//         <div className="status-card">
 
-            "Water Quality Stable"
+//           <h2>
 
-          }
+//             Alarm
 
-        </p>
+//           </h2>
 
-      </div>
+//           <p>
 
-      <div className="footer-box">
+//             {data.alarm}
 
-        <p>
+//           </p>
 
-          Dataset Row :
+//         </div>
 
-          {row}
+//       </div>
 
-        </p>
+//       <div className="recommendation-card">
 
-        <p>
+//         <h2>
 
-          Refresh Interval :
+//           Recommendation
 
-          10 sec
+//         </h2>
 
-        </p>
+//         <p>
 
-      </div>
+//           {
 
-    </div>
+//             data.alarm === "ON"
 
-  );
+//             ?
 
-}
-export default Dashboard;
-/*
+//             "Inspect Water Treatment Unit"
 
+//             :
 
-    // return (
-    //     <div>
-    //         <h2>HydroGuard Dashboard</h2>
+//             "Water Quality Stable"
 
-    //         <p>pH: {data.pH}</p>
-    //         <p>Temperature: {data.temperature}</p>
-    //         <p>Colour: {data.colour}</p>
-    //         <p>Turbidity: {data.turbidity}</p>
-    //         <p>COD: {data.cod}</p>
-    //         <p>Sensor Health: {data.sensor_health}</p>
-    //         <p>Alarm: {data.alarm}</p>
-    //     </div>
-    // );
-}
+//           }
 
-export default Dashboard;
+//         </p>
 
-// // import React, { useEffect, useState } from 'react';
+//       </div>
 
-// // import {
-// //   LineChart,
-// //   Line,
-// //   XAxis,
-// //   YAxis,
-// //   Tooltip,
-// //   CartesianGrid,
-// //   ResponsiveContainer
-// // } from 'recharts';
+//       <div className="footer-box">
 
-// // function Dashboard() {
+//         <p>
 
-// //   const [sensorData, setSensorData] = useState({});
-// //   const [graphData, setGraphData] = useState([]);
-// //   const [loading, setLoading] = useState(true);
+//           Dataset Row :
 
-// //   const fetchData = () => {
+//           {row}
 
-// //     fetch(
-// //       //'https://vnc0aj6tm8.execute-api.ap-southeast-2.amazonaws.com/prod/dashboard'
-// //       'https://3z41hmylgj.execute-api.ap-southeast-2.amazonaws.com/prod/dashboard'
-// //     )
+//         </p>
 
-// //     .then((res) => res.json())
+//         <p>
 
-// //     .then((data) => {
+//           Refresh Interval :
 
-// //       setGraphData(data);
+//           10 sec
 
-// //       setSensorData(
-// //         data[data.length - 1]
-// //       );
+//         </p>
 
-// //       setLoading(false);
+//       </div>
 
-// //     })
+//     </div>
 
-// //     .catch((err) => {
+//   );
 
-// //       console.log(err);
+// }
+// export default Dashboard;
 
-// //     });
 
-// //   };
+// /*
 
 
-// //   useEffect(() => {
+//     // return (
+//     //     <div>
+//     //         <h2>HydroGuard Dashboard</h2>
 
-// //     fetchData();
+//     //         <p>pH: {data.pH}</p>
+//     //         <p>Temperature: {data.temperature}</p>
+//     //         <p>Colour: {data.colour}</p>
+//     //         <p>Turbidity: {data.turbidity}</p>
+//     //         <p>COD: {data.cod}</p>
+//     //         <p>Sensor Health: {data.sensor_health}</p>
+//     //         <p>Alarm: {data.alarm}</p>
+//     //     </div>
+//     // );
+// }
 
-// //     const interval = setInterval(() => {
+// export default Dashboard;
 
-// //       fetchData();
+// // // import React, { useEffect, useState } from 'react';
 
-// //     },
+// // // import {
+// // //   LineChart,
+// // //   Line,
+// // //   XAxis,
+// // //   YAxis,
+// // //   Tooltip,
+// // //   CartesianGrid,
+// // //   ResponsiveContainer
+// // // } from 'recharts';
 
-// //     10000 // 10 seconds
+// // // function Dashboard() {
 
-// //     // 60000 // 1 minute
+// // //   const [sensorData, setSensorData] = useState({});
+// // //   const [graphData, setGraphData] = useState([]);
+// // //   const [loading, setLoading] = useState(true);
 
-// //     );
+// // //   const fetchData = () => {
 
-// //     return () => clearInterval(interval);
+// // //     fetch(
+// // //       //'https://vnc0aj6tm8.execute-api.ap-southeast-2.amazonaws.com/prod/dashboard'
+// // //       'https://3z41hmylgj.execute-api.ap-southeast-2.amazonaws.com/prod/dashboard'
+// // //     )
 
-// //   }, []);
+// // //     .then((res) => res.json())
 
+// // //     .then((data) => {
 
-// //   const waterStatus = () => {
+// // //       setGraphData(data);
 
-// //     if (
+// // //       setSensorData(
+// // //         data[data.length - 1]
+// // //       );
 
-// //       sensorData.ph >= 6.5 &&
+// // //       setLoading(false);
 
-// //       sensorData.ph <= 8.5 &&
+// // //     })
 
-// //       sensorData.temperature <= 40 &&
+// // //     .catch((err) => {
 
-// //       sensorData.tds <= 2100 &&
+// // //       console.log(err);
 
-// //       sensorData.turbidity <= 50 &&
+// // //     });
 
-// //       sensorData.colour <= 150
+// // //   };
 
-// //     )
 
-// //     {
+// // //   useEffect(() => {
 
-// //       return "SAFE";
+// // //     fetchData();
 
-// //     }
+// // //     const interval = setInterval(() => {
 
-// //     return "WARNING";
+// // //       fetchData();
 
-// //   };
+// // //     },
 
+// // //     10000 // 10 seconds
 
-// //   if (loading) {
+// // //     // 60000 // 1 minute
 
-// //     return (
+// // //     );
 
-// //       <h2>
+// // //     return () => clearInterval(interval);
 
-// //         Loading Data...
+// // //   }, []);
 
-// //       </h2>
 
-// //     )
+// // //   const waterStatus = () => {
 
-// //   }
+// // //     if (
 
+// // //       sensorData.ph >= 6.5 &&
 
-// //   return (
+// // //       sensorData.ph <= 8.5 &&
 
-// //     <div className="dashboard">
+// // //       sensorData.temperature <= 40 &&
 
-// //       <h1>
+// // //       sensorData.tds <= 2100 &&
 
-// //         HydroGuard Dashboard
+// // //       sensorData.turbidity <= 50 &&
 
-// //       </h1>
+// // //       sensorData.colour <= 150
 
+// // //     )
 
-// //       <div className="cards">
+// // //     {
 
-// //         <div className="card">
+// // //       return "SAFE";
 
-// //           <h3>pH</h3>
+// // //     }
 
-// //           <p>{sensorData.ph}</p>
+// // //     return "WARNING";
 
-// //         </div>
+// // //   };
 
 
-// //         <div className="card">
+// // //   if (loading) {
 
-// //           <h3>Temperature</h3>
+// // //     return (
 
-// //           <p>
+// // //       <h2>
 
-// //             {sensorData.temperature} °C
+// // //         Loading Data...
 
-// //           </p>
+// // //       </h2>
 
-// //         </div>
+// // //     )
 
+// // //   }
 
-// //         <div className="card">
 
-// //           <h3>TDS</h3>
+// // //   return (
 
-// //           <p>
+// // //     <div className="dashboard">
 
-// //             {sensorData.tds} mg/L
+// // //       <h1>
 
-// //           </p>
+// // //         HydroGuard Dashboard
 
-// //         </div>
+// // //       </h1>
 
 
-// //         <div className="card">
+// // //       <div className="cards">
 
-// //           <h3>Flow</h3>
+// // //         <div className="card">
 
-// //           <p>
+// // //           <h3>pH</h3>
 
-// //             {sensorData.flow}
+// // //           <p>{sensorData.ph}</p>
 
-// //           </p>
+// // //         </div>
 
-// //         </div>
 
+// // //         <div className="card">
 
-// //         <div className="card">
+// // //           <h3>Temperature</h3>
 
-// //           <h3>Colour</h3>
+// // //           <p>
 
-// //           <p>
+// // //             {sensorData.temperature} °C
 
-// //             {sensorData.colour}
+// // //           </p>
 
-// //           </p>
+// // //         </div>
 
-// //         </div>
 
+// // //         <div className="card">
 
-// //         <div className="card">
+// // //           <h3>TDS</h3>
 
-// //           <h3>Turbidity</h3>
+// // //           <p>
 
-// //           <p>
+// // //             {sensorData.tds} mg/L
 
-// //             {sensorData.turbidity}
+// // //           </p>
 
-// //           </p>
+// // //         </div>
 
-// //         </div>
 
-// //       </div>
+// // //         <div className="card">
 
+// // //           <h3>Flow</h3>
 
-// //       <div className="status">
+// // //           <p>
 
-// //         <h2>
+// // //             {sensorData.flow}
 
-// //           Water Status :
+// // //           </p>
 
-// //           {waterStatus()}
+// // //         </div>
 
-// //         </h2>
 
-// //       </div>
+// // //         <div className="card">
 
+// // //           <h3>Colour</h3>
 
-// //       <div className="status">
+// // //           <p>
 
-// //         <h2>
+// // //             {sensorData.colour}
 
-// //           Sensor Health :
+// // //           </p>
 
-// //           Healthy
+// // //         </div>
 
-// //         </h2>
 
-// //       </div>
+// // //         <div className="card">
 
+// // //           <h3>Turbidity</h3>
 
-// //       <div className="timestamp">
+// // //           <p>
 
-// //         <h3>
+// // //             {sensorData.turbidity}
 
-// //           Timestamp
+// // //           </p>
 
-// //         </h3>
+// // //         </div>
 
-// //         <p>
+// // //       </div>
 
-// //           {sensorData.timestamp}
 
-// //         </p>
+// // //       <div className="status">
 
-// //       </div>
+// // //         <h2>
 
+// // //           Water Status :
 
-// //       <div className="graph">
+// // //           {waterStatus()}
 
-// //         <ResponsiveContainer
+// // //         </h2>
 
-// //           width="100%"
+// // //       </div>
 
-// //           height={400}
 
-// //         >
+// // //       <div className="status">
 
-// //           <LineChart
+// // //         <h2>
 
-// //             data={graphData}
+// // //           Sensor Health :
 
-// //           >
+// // //           Healthy
 
-// //             <CartesianGrid
+// // //         </h2>
 
-// //               strokeDasharray="3 3"
+// // //       </div>
 
-// //             />
 
-// //             <XAxis
+// // //       <div className="timestamp">
 
-// //               dataKey="ID"
+// // //         <h3>
 
-// //             />
+// // //           Timestamp
 
-// //             <YAxis />
+// // //         </h3>
 
-// //             <Tooltip />
+// // //         <p>
 
-// //             <Line
+// // //           {sensorData.timestamp}
 
-// //               type="monotone"
+// // //         </p>
 
-// //               dataKey="ph"
+// // //       </div>
 
-// //               stroke="#2196f3"
 
-// //             />
+// // //       <div className="graph">
 
-// //             <Line
+// // //         <ResponsiveContainer
 
-// //               type="monotone"
+// // //           width="100%"
 
-// //               dataKey="temperature"
+// // //           height={400}
 
-// //               stroke="#4caf50"
+// // //         >
 
-// //             />
+// // //           <LineChart
 
-// //             <Line
+// // //             data={graphData}
 
-// //               type="monotone"
+// // //           >
 
-// //               dataKey="tds"
+// // //             <CartesianGrid
 
-// //               stroke="#ff5722"
+// // //               strokeDasharray="3 3"
 
-// //             />
+// // //             />
 
-// //             <Line
+// // //             <XAxis
 
-// //               type="monotone"
+// // //               dataKey="ID"
 
-// //               dataKey="flow"
+// // //             />
 
-// //               stroke="#9c27b0"
+// // //             <YAxis />
 
-// //             />
+// // //             <Tooltip />
 
-// //             <Line
+// // //             <Line
 
-// //               type="monotone"
+// // //               type="monotone"
 
-// //               dataKey="colour"
+// // //               dataKey="ph"
 
-// //               stroke="#ffc107"
+// // //               stroke="#2196f3"
 
-// //             />
+// // //             />
 
-// //             <Line
+// // //             <Line
 
-// //               type="monotone"
+// // //               type="monotone"
 
-// //               dataKey="turbidity"
+// // //               dataKey="temperature"
 
-// //               stroke="#f44336"
+// // //               stroke="#4caf50"
 
-// //             />
+// // //             />
 
-// //           </LineChart>
+// // //             <Line
 
-// //         </ResponsiveContainer>
+// // //               type="monotone"
 
-// //       </div>
+// // //               dataKey="tds"
 
-// //     </div>
+// // //               stroke="#ff5722"
 
-// //   );
+// // //             />
 
-// // }
+// // //             <Line
 
-// // export default Dashboard;
+// // //               type="monotone"
 
+// // //               dataKey="flow"
 
-*/
+// // //               stroke="#9c27b0"
+
+// // //             />
+
+// // //             <Line
+
+// // //               type="monotone"
+
+// // //               dataKey="colour"
+
+// // //               stroke="#ffc107"
+
+// // //             />
+
+// // //             <Line
+
+// // //               type="monotone"
+
+// // //               dataKey="turbidity"
+
+// // //               stroke="#f44336"
+
+// // //             />
+
+// // //           </LineChart>
+
+// // //         </ResponsiveContainer>
+
+// // //       </div>
+
+// // //     </div>
+
+// // //   );
+
+// // // }
+
+// // // export default Dashboard;
+
+
+// */
